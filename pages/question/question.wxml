@@ -1,0 +1,60 @@
+<view class="container">
+  <view class="header">
+    <view class="back-btn" bindtap="handleHeaderAction">
+      <text class="back-icon">←</text>
+      <text class="back-text">{{currentStep > 1 ? '上一题' : '退出'}}</text>
+    </view>
+    <view class="header-title">辞职了么</view>
+  </view>
+
+  <view class="progress-container">
+    <view class="progress-meta">
+      <view class="progress-stage">第 {{currentStep}} / {{totalSteps}} 题</view>
+      <view class="progress-hint">{{remainingHint}}</view>
+    </view>
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{progress}}%"></view>
+    </view>
+    <view class="progress-text">这份问卷会从身心状态、工作到底适不适合你、下一步清不清楚、手里有多少底气，以及现实事务和工作底线六个方面，帮你判断现在更适合“修复当前环境”还是“开始准备离开”。</view>
+    <view class="progress-subtext">选中后不会自动跳题。确认无误再继续，也可以返回上一题修改。</view>
+  </view>
+
+  <view class="step-container">
+    <view class="question-card">
+      <view class="question-tag">{{currentQuestion.category}}</view>
+      <view class="question-title">{{currentQuestion.title}}</view>
+
+      <view class="options">
+        <view
+          class="option-btn {{currentSelection === item.value ? 'option-btn-selected' : ''}}"
+          wx:for="{{currentQuestion.options}}"
+          wx:key="value"
+          bindtap="handleOptionSelect"
+          data-step="{{currentStep}}"
+          data-value="{{item.value}}"
+        >
+          <view class="option-label">{{item.label}}</view>
+          <view class="option-body">
+            <view class="option-text">{{item.text}}</view>
+            <view class="option-desc">{{item.desc}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="footer-actions">
+    <button
+      class="next-btn {{currentSelection ? '' : 'next-btn-disabled'}}"
+      bindtap="goNext"
+      disabled="{{!currentSelection || loading}}"
+    >
+      {{primaryActionText}}
+    </button>
+  </view>
+
+  <view class="loading-overlay" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">正在整理你的测试结果...</view>
+  </view>
+</view>

@@ -1,0 +1,64 @@
+<view class="container">
+  <view class="ambient ambient-left"></view>
+  <view class="ambient ambient-right"></view>
+
+  <!-- 决策值积分展示 -->
+  <view class="points-badge" wx:if="{{decisionPoints > 0}}" bindtap="showPointsGuide">
+    <view class="points-icon">💎</view>
+    <view class="points-value">{{decisionPoints}} 决策值</view>
+  </view>
+
+  <view class="hero-card">
+    <view class="brand-tag">离职决策辅助测试</view>
+    <view class="header-section">
+      <view class="main-title">辞职了么</view>
+      <view class="sub-title">用几分钟，帮你判断现在是否适合离职</view>
+      <view class="hero-copy">从身心状态、工作到底适不适合你、下一步清不清楚、手里有多少底气，以及中国职场里的现实事务和工作底线 6 个维度，给你一个更稳妥的参考。</view>
+    </view>
+
+    <view class="trust-row">
+      <view class="trust-pill">共 {{questionCount}} 题</view>
+      <view class="trust-pill">{{estimatedMinutesText}}</view>
+      <view class="trust-pill">无需注册</view>
+      <view class="trust-pill">结果可重复查看</view>
+    </view>
+  </view>
+
+  <view class="features-section">
+    <view class="feature-card">
+      <view class="feature-icon">状态</view>
+      <view class="feature-text">看清当前状态</view>
+      <view class="feature-desc">分辨是阶段性疲惫，还是持续消耗。</view>
+    </view>
+    <view class="feature-card">
+      <view class="feature-icon">风险</view>
+      <view class="feature-text">评估离职风险</view>
+      <view class="feature-desc">把心里的压力和手头的钱放在一起看。</view>
+    </view>
+    <view class="feature-card">
+      <view class="feature-icon">建议</view>
+      <view class="feature-text">获得下一步建议</view>
+      <view class="feature-desc">结果不替你做决定，只帮你更清楚地判断。</view>
+    </view>
+  </view>
+
+  <view class="start-section">
+    <view class="cta-note">适合正在犹豫是否离职、情绪疲惫，或想先评估风险的人。</view>
+    <view class="privacy-note">无需登录，结果仅保存在当前设备，方便你稍后继续查看。</view>
+    <view class="privacy-note" style="color: #ff9800; font-size: 24rpx;">⚠️ 提示：清除缓存或更换设备会导致历史记录和积分丢失</view>
+    <view class="history-card" wx:if="{{hasHistoryResult}}">
+      <view class="history-title">最近一次测试结果</view>
+      <view class="history-main">{{historyResultTitle}}</view>
+      <view class="history-meta">{{historyResultMeta}}</view>
+      <view class="history-time">{{historyAnsweredAtText}}</view>
+      <button class="history-btn" bindtap="openHistoryResult">查看历史结果</button>
+    </view>
+    <button class="start-btn" bindtap="startTest">开始测试</button>
+    <view class="footer-note">这不是标准答案，而是帮你梳理现状的参考。</view>
+  </view>
+
+  <view class="loading-overlay" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">正在准备你的测试...</view>
+  </view>
+</view>

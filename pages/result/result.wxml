@@ -1,0 +1,367 @@
+<view class="container">
+  <view class="header-section">
+    <view class="back-btn" bindtap="goBack">
+      <text class="back-icon">←</text>
+      <text class="back-text">回到上一页</text>
+    </view>
+  </view>
+
+  <view class="main-card" wx:if="{{hasResult}}">
+    <view class="card-top">
+      <view class="top-subtitle">辞职了么 · 评估结果</view>
+      <view class="top-title">{{resultTitle}}</view>
+      <view class="top-subcopy">{{resultSubtitle}}</view>
+    </view>
+
+    <view class="growth-card">
+      <view class="growth-header">
+        <view class="growth-badge">决策值</view>
+        <view class="growth-value">{{growthState.decisionPoints}}</view>
+      </view>
+      <view class="growth-copy">{{growthState.baseRewardGrantedToday ? '今日首次完成基础测试已获得 20 决策值。' : '今日基础测试奖励已领取。'}} 后续可用于解锁裸辞风险、方向清晰度等专项分析。</view>
+    </view>
+
+    <view class="risk-card" wx:if="{{riskNotice}}">
+      <view class="risk-title">先照顾好自己</view>
+      <view class="risk-text">{{riskNotice}}</view>
+    </view>
+
+    <view class="summary-actions">
+      <view class="summary-title">建议先做这 3 件事</view>
+      <view class="action-list">
+        <view class="action-item" wx:for="{{actionList}}" wx:key="index">
+          <view class="action-dot"></view>
+          <view class="action-text">{{item}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="unlock-card">
+      <view class="unlock-header">
+        <view>
+          <view class="unlock-title">增强版决策分析</view>
+          <view class="unlock-subtitle">在基础结果之上，补充核心卡点、决策风险和 7 天行动方案。</view>
+        </view>
+        <view class="unlock-status {{growthState.enhancedUnlocked ? 'unlock-status-active' : ''}}">
+          {{growthState.enhancedUnlocked ? '已解锁' : '待解锁'}}
+        </view>
+      </view>
+
+      <view class="unlock-progress-row" wx:if="{{!growthState.enhancedUnlocked}}">
+        <view class="unlock-progress-label">分享解锁进度</view>
+        <view class="unlock-progress-value">{{growthState.shareUnlockProgress}} / {{growthState.shareUnlockRequired}}</view>
+      </view>
+      <view class="unlock-progress-bar" wx:if="{{!growthState.enhancedUnlocked}}">
+        <view
+          class="unlock-progress-fill"
+          style="width: {{(growthState.shareUnlockProgress / growthState.shareUnlockRequired) * 100}}%;"
+        ></view>
+      </view>
+
+      <view class="unlock-feature-list">
+        <view class="unlock-feature-item">核心卡点识别</view>
+        <view class="unlock-feature-item">离开/不离开的主要风险</view>
+        <view class="unlock-feature-item">7 天与 30 天行动路线</view>
+        <view class="unlock-feature-item">更像顾问结论的个性化建议</view>
+      </view>
+
+      <view class="locked-preview-card" wx:if="{{!growthState.enhancedUnlocked}}">
+        <view class="locked-preview-title">{{lockedEnhancedPreview.title}}</view>
+        <view class="locked-preview-subtitle">{{lockedEnhancedPreview.subtitle}}</view>
+        <view class="locked-preview-highlight" wx:for="{{lockedEnhancedPreview.highlightList}}" wx:key="index">{{item}}</view>
+        <view class="locked-preview-sample" wx:for="{{lockedEnhancedPreview.sampleList}}" wx:key="index">{{item}}</view>
+      </view>
+
+      <view class="unlock-actions" wx:if="{{!growthState.enhancedUnlocked}}">
+        <button class="btn btn-primary unlock-btn" open-type="share" bindtap="prepareShareUnlock">分享解锁</button>
+        <button class="btn btn-secondary unlock-btn" bindtap="unlockByPoints" wx:if="{{decisionPoints >= 50}}">50积分解锁</button>
+        <button class="btn btn-ghost unlock-btn" bindtap="showUnlockGuide">查看规则</button>
+      </view>
+
+      <view class="unlock-note" wx:if="{{!growthState.enhancedUnlocked}}">
+        <text wx:if="{{decisionPoints < 50}}">{{decisionPoints}}/50 决策值 · 分享或邀请好友可快速获得</text>
+        <text wx:else>已攒够 50 决策值，可直接兑换</text>
+      </view>
+    </view>
+
+    <view class="matrix-board">
+      <view class="matrix-visual">
+        <view class="axis-label y-axis-label">离开必要性</view>
+        <view class="axis-label x-axis-label">离开准备度</view>
+
+        <view class="matrix-grid">
+          <view class="matrix-cell cell-tone-7 {{matrixActiveIndex === 0 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">先止损补安全垫</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 0}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-8 {{matrixActiveIndex === 1 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">先准备再离开</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 1}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-9 {{matrixActiveIndex === 2 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">开始规划离开</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 2}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-4 {{matrixActiveIndex === 3 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">先修复再备退路</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 3}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-5 {{matrixActiveIndex === 4 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">继续准备设观察期</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 4}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-6 {{matrixActiveIndex === 5 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">启动过渡方案</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 5}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-1 {{matrixActiveIndex === 6 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">先别急着辞</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 6}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-2 {{matrixActiveIndex === 7 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">先优化当前环境</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 7}}">当前</view>
+          </view>
+          <view class="matrix-cell cell-tone-3 {{matrixActiveIndex === 8 ? 'matrix-cell-active' : ''}}">
+            <view class="matrix-cell-text">你暂时不用急辞</view>
+            <view class="matrix-cell-badge" wx:if="{{matrixActiveIndex === 8}}">当前</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="matrix-zone">{{matrixZoneText}}</view>
+
+      <view class="board-header">
+        <view class="board-tag">纵轴</view>
+        <view class="board-title">离开必要性</view>
+      </view>
+      <view class="board-score-row">
+        <view class="board-score">{{leaveNeedScore}} 分</view>
+        <view class="board-pill psych-pill">{{needLevelLabel}}</view>
+      </view>
+      <view class="board-desc">由“身心负荷 + 工作错配”组成。分数越高，不代表你一定要辞职，而是说明继续留在当前环境里的代价正在变高。</view>
+
+      <view class="axis-divider"></view>
+
+      <view class="board-header">
+        <view class="board-tag finance-tag">横轴</view>
+        <view class="board-title">离开准备度</view>
+      </view>
+      <view class="board-score-row">
+        <view class="board-score">{{readinessScore}} 分</view>
+        <view class="board-pill finance-pill">{{readyLevelLabel}}</view>
+      </view>
+      <view class="board-desc">由“方向清晰度 + 手里有多少底气”组成。分数越高，说明你越有条件把离开这件事做得更稳，而不是更冒险。</view>
+    </view>
+
+    <view class="detail-toggle" bindtap="toggleDetails">
+      <text class="detail-toggle-text">{{showDetails ? '收起详细分析' : '展开详细分析'}}</text>
+    </view>
+
+    <view wx:if="{{showDetails}}">
+      <view class="dimension-section">
+        <view class="diagnostic-title">六个维度</view>
+        <view class="diagnostic-subtitle">前四项形成核心双轴判断，后两项用于补充中国职场里的现实风险和底线信号。</view>
+        <view class="dimension-grid">
+          <view class="dimension-card" wx:for="{{dimensionCards}}" wx:key="title">
+            <view class="dimension-header">
+              <view class="dimension-title">{{item.title}}</view>
+              <view class="dimension-score">{{item.score}}</view>
+            </view>
+            <view class="dimension-summary">{{item.summary}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="diagnostic-section">
+        <view class="diagnostic-title">离职前要先布局的事</view>
+        <view class="practical-grid">
+          <view class="practical-card" wx:for="{{practicalCards}}" wx:key="title">
+            <view class="practical-card-header">
+              <view class="practical-card-title">{{item.title}}</view>
+              <view class="practical-card-status">{{item.status}}</view>
+            </view>
+            <view class="practical-card-summary">{{item.summary}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="diagnostic-section">
+        <view class="diagnostic-title">离职前别忘了这些细节</view>
+        <view class="action-list secondary-action-list">
+          <view class="action-item" wx:for="{{practicalAdviceList}}" wx:key="index">
+            <view class="action-dot"></view>
+            <view class="action-text">{{item}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="diagnostic-section">
+        <view class="diagnostic-title">工作底线观察</view>
+        <view class="baseline-card">
+          <view class="baseline-status">{{baselineStatus}}</view>
+          <view class="baseline-copy" wx:for="{{baselineAdviceList}}" wx:key="index">{{item}}</view>
+        </view>
+      </view>
+
+      <view class="diagnostic-section">
+        <view class="diagnostic-title">结果解读</view>
+        <view class="diagnostic-content">
+          <view class="advice-text" wx:for="{{adviceList}}" wx:key="index">
+            {{item}}
+          </view>
+        </view>
+      </view>
+
+      <view class="diagnostic-section">
+        <view class="diagnostic-title">换个职业角度再看一眼</view>
+        <view class="insight-stack">
+          <view class="insight-card">
+            <view class="insight-header">
+              <view class="insight-title">{{careerDirectionCard.title}}</view>
+              <view class="insight-tag">{{careerDirectionCard.tag}}</view>
+            </view>
+            <view class="insight-summary">{{careerDirectionCard.summary}}</view>
+            <view class="insight-list-item" wx:for="{{careerDirectionCard.list}}" wx:key="index">{{item}}</view>
+          </view>
+
+          <view class="insight-card">
+            <view class="insight-header">
+              <view class="insight-title">{{burnoutInsight.title}}</view>
+              <view class="insight-tag">{{burnoutInsight.tag}}</view>
+            </view>
+            <view class="insight-summary">{{burnoutInsight.summary}}</view>
+            <view class="insight-meta-row">
+              <view class="insight-meta-label">常见感觉</view>
+              <view class="insight-meta-text">{{burnoutInsight.symptom}}</view>
+            </view>
+            <view class="insight-meta-row">
+              <view class="insight-meta-label">更像原因</view>
+              <view class="insight-meta-text">{{burnoutInsight.cause}}</view>
+            </view>
+            <view class="insight-meta-row">
+              <view class="insight-meta-label">先对自己用这味药</view>
+              <view class="insight-meta-text">{{burnoutInsight.remedy}}</view>
+            </view>
+          </view>
+
+          <view class="insight-card">
+            <view class="insight-header">
+              <view class="insight-title">{{nextFocusGuide.title}}</view>
+              <view class="insight-tag">{{nextFocusGuide.tag}}</view>
+            </view>
+            <view class="insight-summary">{{nextFocusGuide.summary}}</view>
+            <view class="insight-list-item" wx:for="{{nextFocusGuide.list}}" wx:key="index">{{item}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="diagnostic-section">
+        <view class="diagnostic-title">你可以继续留意</view>
+        <view class="action-list secondary-action-list">
+          <view class="action-item" wx:for="{{actionList}}" wx:key="index">
+            <view class="action-dot"></view>
+            <view class="action-text">{{item}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="enhanced-section" wx:if="{{growthState.enhancedUnlocked}}">
+      <view class="enhanced-header">
+        <view>
+          <view class="enhanced-title">增强版专业决策分析</view>
+          <view class="enhanced-subtitle">已解锁 {{unlockedModuleCount}} 个专业模块 · 研究视角增强版</view>
+        </view>
+        <view class="enhanced-badge">可信增强</view>
+      </view>
+
+      <view class="enhanced-credibility-card">
+        <view class="enhanced-credibility-hero">
+          <view class="enhanced-credibility-eyebrow">{{enhancedAuthority.eyebrow}}</view>
+          <view class="enhanced-credibility-title">{{enhancedAuthority.title}}</view>
+          <view class="enhanced-credibility-subtitle">{{enhancedAuthority.subtitle}}</view>
+
+          <view class="enhanced-stat-list">
+            <view class="enhanced-stat-item" wx:for="{{enhancedAuthority.statList}}" wx:key="label">
+              <view class="enhanced-stat-label">{{item.label}}</view>
+              <view class="enhanced-stat-value">{{item.value}}</view>
+            </view>
+          </view>
+        </view>
+
+        <view class="enhanced-meta-block">
+          <view class="enhanced-meta-title">参考院校研究视角</view>
+          <view class="enhanced-chip-list">
+            <view class="enhanced-chip" wx:for="{{enhancedAuthority.institutionList}}" wx:key="index">{{item}}</view>
+          </view>
+        </view>
+
+        <view class="enhanced-meta-block">
+          <view class="enhanced-meta-title">专业学科视角</view>
+          <view class="enhanced-chip-list">
+            <view class="enhanced-chip enhanced-chip-soft" wx:for="{{enhancedAuthority.disciplineList}}" wx:key="index">{{item}}</view>
+          </view>
+        </view>
+
+        <view class="enhanced-meta-block">
+          <view class="enhanced-meta-title">分析框架</view>
+          <view class="enhanced-chip-list">
+            <view class="enhanced-chip enhanced-chip-outline" wx:for="{{enhancedAuthority.modelList}}" wx:key="index">{{item}}</view>
+          </view>
+        </view>
+
+        <view class="enhanced-rigor-card">
+          <view class="enhanced-meta-title">为什么这版更像专业顾问在看</view>
+          <view class="enhanced-rigor-item" wx:for="{{enhancedAuthority.rigorList}}" wx:key="index">{{item}}</view>
+        </view>
+      </view>
+
+      <view class="enhanced-card">
+        <view class="enhanced-card-title">核心卡点识别</view>
+        <view class="enhanced-card-body">{{enhancedReport.summary}}</view>
+        <view class="enhanced-list-item" wx:for="{{enhancedReport.blockers}}" wx:key="index">{{item}}</view>
+      </view>
+
+      <view class="enhanced-card">
+        <view class="enhanced-card-title">决策风险提醒</view>
+        <view class="enhanced-list-item" wx:for="{{enhancedReport.riskList}}" wx:key="index">{{item}}</view>
+      </view>
+
+      <view class="enhanced-card">
+        <view class="enhanced-card-title">未来 7 天行动方案</view>
+        <view class="enhanced-list-item" wx:for="{{enhancedReport.actionPlan}}" wx:key="index">{{item}}</view>
+      </view>
+
+      <view class="enhanced-card">
+        <view class="enhanced-card-title">未来 30 天推进建议</view>
+        <view class="enhanced-list-item" wx:for="{{enhancedReport.thirtyDayPlan}}" wx:key="index">{{item}}</view>
+        <view class="enhanced-recommendation">{{enhancedReport.recommendation}}</view>
+      </view>
+    </view>
+
+    <view class="disclaimer-card">
+      <view class="disclaimer-title">提醒</view>
+      <view class="disclaimer-text">这份评估不是替你下决定，而是帮你把情绪、现实和方向拆开来看。工作会变，职业主线还在。很多时候，决定一旦被看清，就不会那么慌了。</view>
+    </view>
+  </view>
+
+  <view class="main-card empty-card" wx:else>
+    <view class="card-top">
+      <view class="top-subtitle">辞职了么 · 暂无结果</view>
+      <view class="top-title">{{resultTitle}}</view>
+      <view class="top-subcopy">{{resultSubtitle}}</view>
+    </view>
+
+    <view class="disclaimer-card">
+      <view class="disclaimer-title">说明</view>
+      <view class="disclaimer-text">为了保护隐私，测试结果只保存在当前设备，不会随着分享自动同步。</view>
+    </view>
+  </view>
+
+  <view class="action-buttons">
+    <button class="btn btn-outline" bindtap="restartTest">重新测试</button>
+    <button class="btn btn-primary" open-type="share" bindtap="prepareShareUnlock" wx:if="{{hasResult}}">{{growthState.enhancedUnlocked ? '分享结果卡片' : '分享解锁增强版'}}</button>
+    <button class="btn btn-primary" bindtap="restartTest" wx:else>开始测试</button>
+  </view>
+</view>
